@@ -1,0 +1,1815 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Eh8wG",
+      "x": 0,
+      "y": 0,
+      "name": "1 - URL Input",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "#0D0D0D",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "p8EO9",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#141414",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#222222"
+          },
+          "gap": 12,
+          "padding": [
+            0,
+            40
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "tt4qq",
+              "name": "Logo Icon",
+              "width": 28,
+              "height": 28,
+              "iconFontName": "youtube-logo",
+              "iconFontFamily": "phosphor",
+              "fill": "#FF4444"
+            },
+            {
+              "type": "text",
+              "id": "Pod9C",
+              "name": "Logo Text",
+              "fill": "#FFFFFF",
+              "content": "YT Downloader",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "bv06o",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Zc3Sf",
+          "name": "Hero Section",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            0,
+            0,
+            80,
+            0
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ubSPO",
+              "name": "Hero Title",
+              "fill": "#FFFFFF",
+              "content": "Download YouTube Playlists",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 48,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "cQkQm",
+              "name": "Hero Subtitle",
+              "fill": "#9E9E9E",
+              "content": "Paste a YouTube playlist URL to fetch its contents and download it as MP3",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "NS6wM",
+              "name": "Input Card",
+              "width": 720,
+              "height": 72,
+              "fill": "#1C1C1C",
+              "cornerRadius": 12,
+              "stroke": {
+                "align": "outside",
+                "thickness": 2,
+                "fill": "#2A2A2A"
+              },
+              "gap": 12,
+              "padding": [
+                0,
+                8,
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UJdPc",
+                  "name": "URL Input Placeholder",
+                  "fill": "#5A5A5A",
+                  "content": "Paste YouTube playlist URL (e.g. https://youtube.com/playlist?list=...)",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "I0jrm",
+                  "name": "Input Spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "QVeIN",
+                  "name": "Fetch Button",
+                  "width": 160,
+                  "height": 48,
+                  "fill": "#FF4444",
+                  "cornerRadius": 8,
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "psfV7",
+                      "name": "Fetch Icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "magnifying-glass",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cuYCz",
+                      "name": "Fetch Button Text",
+                      "fill": "#FFFFFF",
+                      "content": "Fetch Playlist",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Fh3Vd",
+              "name": "Hint Text",
+              "fill": "#5A5A5A",
+              "content": "Supports public playlists • Downloads as MP3 at 320kbps • Embeds metadata & artwork",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "XhMGV",
+      "x": 1520,
+      "y": 0,
+      "name": "2 - Playlist Preview",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "#0D0D0D",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "RR648",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#141414",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#222222"
+          },
+          "gap": 12,
+          "padding": [
+            0,
+            40
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "qYdWn",
+              "name": "Logo Icon",
+              "width": 28,
+              "height": 28,
+              "iconFontName": "youtube-logo",
+              "iconFontFamily": "phosphor",
+              "fill": "#FF4444"
+            },
+            {
+              "type": "text",
+              "id": "tzjSs",
+              "name": "Logo Text",
+              "fill": "#FFFFFF",
+              "content": "YT Downloader",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "PEUx0",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "KyWQD",
+              "name": "Back Button",
+              "height": 36,
+              "fill": "#1C1C1C",
+              "cornerRadius": 8,
+              "gap": 8,
+              "padding": [
+                0,
+                16
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "fnpUZ",
+                  "name": "Back Icon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "phosphor",
+                  "fill": "#9E9E9E"
+                },
+                {
+                  "type": "text",
+                  "id": "XfeKc",
+                  "name": "Back Text",
+                  "fill": "#9E9E9E",
+                  "content": "New Search",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Rn1ad",
+          "name": "Main Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 32,
+          "padding": [
+            32,
+            60
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "eO8Pv",
+              "name": "Left Panel",
+              "width": 340,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TrooB",
+                  "name": "Playlist Thumbnail",
+                  "metadata": {
+                    "type": "unsplash",
+                    "username": "salabarria_23",
+                    "link": "https://unsplash.com/@salabarria_23",
+                    "author": "Brandon Salabarría"
+                  },
+                  "clip": true,
+                  "width": 340,
+                  "height": 220,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "https://images.unsplash.com/photo-1703115015343-81b498a8c080?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NzgzNjUzOTZ8&ixlib=rb-4.1.0&q=80&w=1080",
+                    "mode": "fill"
+                  },
+                  "cornerRadius": 12
+                },
+                {
+                  "type": "frame",
+                  "id": "atFjA",
+                  "name": "Playlist Meta",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "u8ZnGZ",
+                      "name": "Playlist Title",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Lofi Hip Hop Beats — Study & Relax",
+                      "fontFamily": "Inter",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XO9cT",
+                      "name": "Channel Row",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "Bq2TW",
+                          "name": "Channel Icon",
+                          "width": 16,
+                          "height": 16,
+                          "iconFontName": "user-circle",
+                          "iconFontFamily": "phosphor",
+                          "fill": "#9E9E9E"
+                        },
+                        {
+                          "type": "text",
+                          "id": "OC2gZ",
+                          "name": "Channel Name",
+                          "fill": "#9E9E9E",
+                          "content": "ChillBeats Official",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oRrMp",
+                      "name": "Stats Row",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "aR1Na",
+                          "name": "Video Count Badge",
+                          "fill": "#1C1C1C",
+                          "cornerRadius": 6,
+                          "gap": 6,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "RkoZv",
+                              "name": "Video Icon",
+                              "width": 13,
+                              "height": 13,
+                              "iconFontName": "music-note",
+                              "iconFontFamily": "phosphor",
+                              "fill": "#FF4444"
+                            },
+                            {
+                              "type": "text",
+                              "id": "lMoZg",
+                              "name": "Video Count Text",
+                              "fill": "#CCCCCC",
+                              "content": "48 tracks",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ss1od",
+              "name": "Right Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "u5JcY",
+                  "name": "Track List Header",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W2ZopY",
+                      "name": "Track List Title",
+                      "fill": "#FFFFFF",
+                      "content": "Playlist Contents",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FIomn",
+                      "name": "Track List Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WiT78",
+                  "name": "Track List",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vse6m",
+                      "name": "Track Row 1",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IeAWA",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "01",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Wxu7c",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ikb8A",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zSN0v",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Lofi Chill Beats — Study Session Vol 1",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qRfGP",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "mTJac",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "3:24",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DJzEU",
+                      "name": "track2",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NOoeH",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "02",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O6qrdl",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g263J",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cR801",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Morning Coffee Vibes — Jazzy Lo-Fi",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qZXLz",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "X3hh9v",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "4:12",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qxjuW",
+                      "name": "track3",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TkY7Z",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "03",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "t3f94",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cTjkR",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Cb5Ls",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Rainy Day Study Mix — Ambient Beats",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "UasWj",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "c3lfRg",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "2:58",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tTaj7",
+                      "name": "track4",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pgb61",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "04",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g2UpVd",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fEXxp",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E6kNP6",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Midnight Focus — Deep Concentration",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SEgbF",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "r5g2I",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "5:01",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qBx8Z",
+                      "name": "track5",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Q4IiFc",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "05",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gFZeP",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "dBiZT",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "wIKgA",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Peaceful Afternoon — Soft Lo-Fi",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dPqP1",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "Xg59e",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "3:45",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dh8kB",
+                      "name": "track6",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "#161616",
+                      "cornerRadius": 8,
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Q2l7m",
+                          "name": "Track Num",
+                          "fill": "#5A5A5A",
+                          "content": "06",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HTNDS",
+                          "name": "Track Thumb",
+                          "clip": true,
+                          "width": 80,
+                          "height": 46,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pj4u6",
+                          "name": "Track Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "d63X0",
+                              "name": "Track Title",
+                              "fill": "#FFFFFF",
+                              "content": "Late Night Drive — Chill Synthwave",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "phJ2N",
+                              "name": "Track Artist",
+                              "fill": "#777777",
+                              "content": "ChillBeats Official",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "lkPVD",
+                          "name": "Track Duration",
+                          "fill": "#777777",
+                          "content": "4:33",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mwCcS",
+                      "name": "More Indicator",
+                      "width": "fill_container",
+                      "height": 48,
+                      "gap": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vucHL",
+                          "name": "More Text",
+                          "fill": "#5A5A5A",
+                          "content": "+ 42 more tracks",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PWXY6",
+          "name": "Download Bar",
+          "width": "fill_container",
+          "height": 72,
+          "fill": "#141414",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#222222"
+          },
+          "gap": 16,
+          "padding": [
+            0,
+            60
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "iUQRQ",
+              "name": "Download Bar Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "mkIXG",
+              "name": "Folder Info",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "R9qm8s",
+                  "name": "Folder Icon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "folder",
+                  "iconFontFamily": "phosphor",
+                  "fill": "#9E9E9E"
+                },
+                {
+                  "type": "text",
+                  "id": "IY5wt",
+                  "name": "Folder Text",
+                  "fill": "#9E9E9E",
+                  "content": "Will be saved to: ~/Music/Playlists",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "sTS8E",
+              "name": "Download Button",
+              "height": 48,
+              "fill": "#FF4444",
+              "cornerRadius": 8,
+              "gap": 10,
+              "padding": [
+                0,
+                32
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "n8g79O",
+                  "name": "Download Icon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "download-simple",
+                  "iconFontFamily": "phosphor",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "bgAk8",
+                  "name": "Download Button Text",
+                  "fill": "#FFFFFF",
+                  "content": "Download Playlist (48 tracks)",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "OC2Gl",
+      "x": 3040,
+      "y": 0,
+      "name": "3 - Download Progress",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "#0D0D0D",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "U9E7eC",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#141414",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#222222"
+          },
+          "gap": 12,
+          "padding": [
+            0,
+            40
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "M1claF",
+              "name": "Logo Icon",
+              "width": 28,
+              "height": 28,
+              "iconFontName": "youtube-logo",
+              "iconFontFamily": "phosphor",
+              "fill": "#FF4444"
+            },
+            {
+              "type": "text",
+              "id": "htnbd",
+              "name": "Logo Text",
+              "fill": "#FFFFFF",
+              "content": "YT Downloader",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "F4qONx",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "mn2pL",
+              "name": "Status Badge",
+              "fill": "#1C2A1C",
+              "cornerRadius": 8,
+              "gap": 8,
+              "padding": [
+                6,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "hzn8R",
+                  "name": "Status Dot",
+                  "fill": "#4CAF50",
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "type": "text",
+                  "id": "SMG9c",
+                  "name": "Status Text",
+                  "fill": "#4CAF50",
+                  "content": "Downloading...",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "X1WUh5",
+          "name": "Progress Main",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            40,
+            60
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "M6aYOz",
+              "name": "Overall Progress Card",
+              "width": "fill_container",
+              "fill": "#141414",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "outside",
+                "thickness": 1,
+                "fill": "#222222"
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "padding": [
+                28,
+                32
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "a4hT6U",
+                  "name": "Overall Header",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "Ich1i",
+                      "name": "Overall Icon",
+                      "width": 22,
+                      "height": 22,
+                      "iconFontName": "download-simple",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#FF4444"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X9O3l",
+                      "name": "Overall Title",
+                      "fill": "#FFFFFF",
+                      "content": "Lofi Hip Hop Beats — Study & Relax",
+                      "fontFamily": "Inter",
+                      "fontSize": 17,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bZkL9",
+                      "name": "Overall Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "tCqnV",
+                      "name": "Overall Count",
+                      "fill": "#9E9E9E",
+                      "content": "12 / 48",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zlcut",
+                      "name": "Overall Percent",
+                      "fill": "#FF4444",
+                      "content": "25%",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "P6x4ev",
+                  "name": "Overall Bar BG",
+                  "width": "fill_container",
+                  "height": 10,
+                  "fill": "#2A2A2A",
+                  "cornerRadius": 5,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dLJqT",
+                      "name": "Overall Bar Fill",
+                      "width": 180,
+                      "height": 10,
+                      "fill": "#FF4444",
+                      "cornerRadius": 5
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SFvaq",
+              "name": "Track Progress List",
+              "clip": true,
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "amQjC",
+                  "name": "Track Progress 1",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#141414",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 1,
+                    "fill": "#222222"
+                  },
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "CGypG",
+                      "name": "Status Icon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "check-circle",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#4CAF50"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Em2kk",
+                      "name": "Track Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Unjfv",
+                          "name": "Title",
+                          "fill": "#FFFFFF",
+                          "content": "Lofi Chill Beats — Study Session Vol 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mHzUJ",
+                          "name": "Progress Bar BG",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "iQap6",
+                              "name": "Progress Bar Fill",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#4CAF50",
+                              "cornerRadius": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "D5QKOG",
+                      "name": "Percent",
+                      "fill": "#4CAF50",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o3tVv",
+                  "name": "tp2",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#141414",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 1,
+                    "fill": "#222222"
+                  },
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "eAWBK",
+                      "name": "Status Icon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "check-circle",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#4CAF50"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HdE4K",
+                      "name": "Track Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "S65zQ",
+                          "name": "Title",
+                          "fill": "#FFFFFF",
+                          "content": "Lofi Chill Beats — Study Session Vol 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HFhWU",
+                          "name": "Progress Bar BG",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GNpLq",
+                              "name": "Progress Bar Fill",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#4CAF50",
+                              "cornerRadius": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "hu290",
+                      "name": "Percent",
+                      "fill": "#4CAF50",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eEj2P",
+                  "name": "tp3",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#141414",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 1,
+                    "fill": "#222222"
+                  },
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "ua7Zl",
+                      "name": "Status Icon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "check-circle",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#4CAF50"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZMnSF",
+                      "name": "Track Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NvZBT",
+                          "name": "Title",
+                          "fill": "#FFFFFF",
+                          "content": "Lofi Chill Beats — Study Session Vol 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sKSCI",
+                          "name": "Progress Bar BG",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gqQq0",
+                              "name": "Progress Bar Fill",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#4CAF50",
+                              "cornerRadius": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "sr5fI",
+                      "name": "Percent",
+                      "fill": "#4CAF50",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XoIA7",
+                  "name": "tp4",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#141414",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 1,
+                    "fill": "#222222"
+                  },
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "d3U1It",
+                      "name": "Status Icon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "check-circle",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#4CAF50"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ueqZJ",
+                      "name": "Track Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PTwWD",
+                          "name": "Title",
+                          "fill": "#FFFFFF",
+                          "content": "Lofi Chill Beats — Study Session Vol 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BFim0",
+                          "name": "Progress Bar BG",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fTgHK",
+                              "name": "Progress Bar Fill",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#4CAF50",
+                              "cornerRadius": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "MbmNq",
+                      "name": "Percent",
+                      "fill": "#4CAF50",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o8JR9",
+                  "name": "tp5",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#141414",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 1,
+                    "fill": "#222222"
+                  },
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "oxK3A",
+                      "name": "Status Icon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "check-circle",
+                      "iconFontFamily": "phosphor",
+                      "fill": "#4CAF50"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xfToL",
+                      "name": "Track Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t3HRsf",
+                          "name": "Title",
+                          "fill": "#FFFFFF",
+                          "content": "Lofi Chill Beats — Study Session Vol 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "m2u56",
+                          "name": "Progress Bar BG",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "#2A2A2A",
+                          "cornerRadius": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bUdhN",
+                              "name": "Progress Bar Fill",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#4CAF50",
+                              "cornerRadius": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "a4TMVi",
+                      "name": "Percent",
+                      "fill": "#4CAF50",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zRZfP",
+          "name": "Cancel Bar",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#141414",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#222222"
+          },
+          "padding": [
+            0,
+            60
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "W7mnfx",
+              "name": "Cancel Bar Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "J03Npl",
+              "name": "Open Folder Button",
+              "height": 40,
+              "fill": "#1C1C1C",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "outside",
+                "thickness": 1,
+                "fill": "#2A2A2A"
+              },
+              "gap": 8,
+              "padding": [
+                0,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "npsxd",
+                  "name": "Folder Icon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "folder-open",
+                  "iconFontFamily": "phosphor",
+                  "fill": "#9E9E9E"
+                },
+                {
+                  "type": "text",
+                  "id": "DVEJX",
+                  "name": "Open Folder Text",
+                  "fill": "#9E9E9E",
+                  "content": "Open Folder",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tWAX6",
+              "name": "Cancel Button",
+              "height": 40,
+              "fill": "#2A1414",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "outside",
+                "thickness": 1,
+                "fill": "#3A1A1A"
+              },
+              "gap": 8,
+              "padding": [
+                0,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "bErFO",
+                  "name": "Cancel Icon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "x-circle",
+                  "iconFontFamily": "phosphor",
+                  "fill": "#FF6B6B"
+                },
+                {
+                  "type": "text",
+                  "id": "elKOv",
+                  "name": "Cancel Text",
+                  "fill": "#FF6B6B",
+                  "content": "Cancel Download",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
