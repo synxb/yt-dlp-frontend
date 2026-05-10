@@ -8,8 +8,8 @@ import {
 } from 'lucide-react';
 import type { PlaylistInfo } from '../types';
 import { TrackRow, formatDuration } from '../components/TrackRow';
-import { browseFolder } from '../api';
 import { AppHeader } from '../components/AppHeader';
+import { FolderPickerModal } from '../components/FolderPickerModal';
 
 interface PlaylistPreviewPageProps {
   playlist: PlaylistInfo;
@@ -29,17 +29,7 @@ export function PlaylistPreviewPage({
   loading,
 }: PlaylistPreviewPageProps) {
   const [downloadDir, setDownloadDir] = useState(defaultDownloadDir);
-  const [browsingDir, setBrowsingDir] = useState(false);
-
-  async function handleBrowse() {
-    setBrowsingDir(true);
-    try {
-      const chosen = await browseFolder(downloadDir);
-      if (chosen) setDownloadDir(chosen);
-    } finally {
-      setBrowsingDir(false);
-    }
-  }
+  const [showPicker, setShowPicker] = useState(false);
 
   const totalDuration = playlist.tracks.reduce((acc, t) => acc + (t.duration ?? 0), 0);
 
@@ -102,13 +92,19 @@ export function PlaylistPreviewPage({
       <div className="download-bar">
         <button
           className="folder-browse-btn"
-          onClick={handleBrowse}
-          disabled={browsingDir}
+          onClick={() => setShowPicker(true)}
           title="Choose download folder"
         >
           <FolderOpen size={15} />
           <span className="folder-browse-path">{downloadDir || 'Choose folder…'}</span>
         </button>
+        {showPicker && (
+          <FolderPickerModal
+            initialPath={downloadDir}
+            onSelect={setDownloadDir}
+            onClose={() => setShowPicker(false)}
+          />
+        )}
         <span style={{ flex: 1 }} />
         <button
           className="download-btn"

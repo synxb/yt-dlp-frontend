@@ -288,44 +288,27 @@ def trigger_plex_scan():
     return {"triggered": True, "sectionId": section_id}
 
 
-@app.get("/api/browse-folder")
-async def browse_folder(initialDir: str | None = None):
+@app.get("/api/list-dir")
+async def list_dir(path: str | None = None):
     """
-    Open a native OS directory-picker dialog on the host machine and return
-    the selected path.  Uses tkinter so it works on Windows, macOS and Linux
-    without extra dependencies.
+    Return the subdirectories of a given path (defaults to the user's home
+    directory).  Used by the browser-based folder picker so it works on
+    remote/headless servers without a GUI.
     """
-    import tkinter as tk
-    from tkinter import filedialog
+    base = Path(path) if path else Path.home()
+    if not base.exists() or not base.is_dir():
+        raise HTTPException(status_code=400, detail="Path does not exist or is not a directory")
 
-    result: dict = {"path": None}
-    event = threading.Event()
-
-    def _open_dialog() -> None:
-        root = tk.Tk()
-        root.withdraw()          # hide the empty Tk window
-        root.wm_attributes("-topmost", True)  # bring dialog to front
-        chosen = filedialog.askdirectory(
-            title="Select download folder",
-            initialdir=initialDir or str(Path.home()),
+    try:
+        dirs = sorted(
+            [str(p) for p in base.iterdir() if p.is_dir() and not p.name.startswith('.')],
+            key=lambda p: p.lower(),
         )
-        root.destroy()
-        result["path"] = chosen or None
-        event.set()
+    except PermissionError:
+        dirs = []
 
-    # tkinter must run on the main OS thread on some platforms;
-    # on Windows it works fine in any thread, but we isolate it regardless.
-    t = threading.Thread(target=_open_dialog, daemon=True)
-    t.start()
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, event.wait)
-
-    if result["path"] is None:
-        # User cancelled — return 204 No Content so the client keeps its current dir
-        from fastapi.responses import Response
-        return Response(status_code=204)
-
-    return {"path": result["path"]}
+    parent = str(base.parent) if base.parent != base else None
+    return {"current": str(base), "parent": parent, "dirs": dirs}
 
 
 @app.get("/api/health")

@@ -55,16 +55,14 @@ export async function getConfig(): Promise<{ downloadDir: string }> {
 }
 
 /**
- * Ask the host machine to open a native OS directory-picker dialog.
- * Returns the chosen path, or null if the user cancelled.
+ * List subdirectories of a path on the server (defaults to home directory).
+ * Used by the browser-based folder picker.
  */
-export async function browseFolder(initialDir?: string): Promise<string | null> {
-  const params = initialDir ? `?initialDir=${encodeURIComponent(initialDir)}` : '';
-  const res = await fetch(`${BASE}/api/browse-folder${params}`);
-  if (res.status === 204) return null; // user cancelled
-  if (!res.ok) throw new Error('Failed to open folder dialog');
-  const data = await res.json();
-  return data.path ?? null;
+export async function listDir(path?: string): Promise<{ current: string; parent: string | null; dirs: string[] }> {
+  const params = path ? `?path=${encodeURIComponent(path)}` : '';
+  const res = await fetch(`${BASE}/api/list-dir${params}`);
+  if (!res.ok) throw new Error('Failed to list directory');
+  return res.json();
 }
 
 export async function updateConfig(downloadDir: string): Promise<{ downloadDir: string }> {

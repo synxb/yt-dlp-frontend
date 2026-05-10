@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, FolderOpen, RefreshCw, Save } from 'lucide-react';
 import type { PlexLibrary, Settings } from '../api';
-import { browseFolder, getPlexLibraries, getSettings, saveSettings, triggerPlexScan } from '../api';
+import { getPlexLibraries, getSettings, saveSettings, triggerPlexScan } from '../api';
+import { FolderPickerModal } from '../components/FolderPickerModal';
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -13,7 +14,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
   // ── Download fields ──────────────────────────────────────────────────
   const [downloadDir, setDownloadDir] = useState('');
-  const [browsingDir, setBrowsingDir] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   // ── Plex fields ──────────────────────────────────────────────────────
   const [plexUrl, setPlexUrl] = useState('');
@@ -46,16 +47,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       .catch(() => setSaveError('Failed to load settings'))
       .finally(() => setLoading(false));
   }, []);
-
-  async function handleBrowse() {
-    setBrowsingDir(true);
-    try {
-      const chosen = await browseFolder(downloadDir);
-      if (chosen) setDownloadDir(chosen);
-    } finally {
-      setBrowsingDir(false);
-    }
-  }
 
   async function handleLoadLibraries() {
     setLoadingLibraries(true);
@@ -162,16 +153,23 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   />
                   <button
                     className="settings-browse-btn"
-                    onClick={handleBrowse}
-                    disabled={browsingDir}
+                    onClick={() => setShowPicker(true)}
                     title="Browse…"
                   >
                     <FolderOpen size={15} />
-                    {browsingDir ? 'Opening…' : 'Browse…'}
+                    Browse…
                   </button>
                 </div>
               </div>
             </div>
+
+            {showPicker && (
+              <FolderPickerModal
+                initialPath={downloadDir}
+                onSelect={setDownloadDir}
+                onClose={() => setShowPicker(false)}
+              />
+            )}
 
             {/* ── Plex section ──────────────────────────────────────── */}
             <div className="settings-card">
