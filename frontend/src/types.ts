@@ -23,6 +23,16 @@ export interface PlaylistInfo {
 
 export type DownloadStatus = 'pending' | 'running' | 'done' | 'cancelled' | 'error';
 
+export interface QueueItem {
+  sessionId: string;
+  playlist: PlaylistInfo;
+  tracks: TrackInfo[];
+  downloadStatus: DownloadStatus;
+  completed: number;
+  downloadDir: string;
+  addedAt: number;
+}
+
 export interface ProgressEvent {
   type:
     | 'status'

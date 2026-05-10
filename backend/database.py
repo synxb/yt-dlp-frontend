@@ -6,6 +6,7 @@ The DB file lives next to this module: backend/settings.db
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from pathlib import Path
 
@@ -55,7 +56,28 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS download_sessions (
+                session_id   TEXT PRIMARY KEY,
+                playlist_id  TEXT NOT NULL,
+                title        TEXT NOT NULL,
+                url          TEXT NOT NULL,
+                channel      TEXT,
+                thumbnail    TEXT,
+                download_dir TEXT NOT NULL,
+                status       TEXT NOT NULL DEFAULT 'pending',
+                completed    INTEGER NOT NULL DEFAULT 0,
+                total        INTEGER NOT NULL DEFAULT 0,
+                tracks_json  TEXT NOT NULL DEFAULT '[]',
+                added_at     TEXT NOT NULL
+                             DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+            )
+            """
+        )
         conn.commit()
+    # Remove sessions that finished successfully — they're no longer needed.
+    delete_done_sessions()
 
 
 def get_setting(key: str) -> str | None:
@@ -118,3 +140,73 @@ def get_history(limit: int = 50) -> list[dict]:
             (limit,),
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+# ─── Download sessions ──────────────────────────────────────────────────
+
+
+def upsert_session(
+    session_id: str,
+    playlist_id: str,
+    title: str,
+    url: str,
+    channel: str | None,
+    thumbnail: str | None,
+    download_dir: str,
+    status: str,
+    completed: int,
+    total: int,
+    tracks: list[dict],
+) -> None:
+    with _get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO download_sessions
+                (session_id, playlist_id, title, url, channel, thumbnail,
+                 download_dir, status, completed, total, tracks_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(session_id) DO UPDATE SET
+                status       = excluded.status,
+                completed    = excluded.completed,
+                tracks_json  = excluded.tracks_json,
+                download_dir = excluded.download_dir
+            """,
+            (
+                session_id, playlist_id, title, url, channel, thumbnail,
+                download_dir, status, completed, total, json.dumps(tracks),
+            ),
+        )
+        conn.commit()
+
+
+def get_all_sessions() -> list[dict]:
+    with _get_conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT session_id, playlist_id, title, url, channel, thumbnail,
+                   download_dir, status, completed, total, tracks_json, added_at
+            FROM download_sessions
+            ORDER BY added_at DESC
+            """
+        ).fetchall()
+    result = []
+    for row in rows:
+        d = dict(row)
+        d["tracks"] = json.loads(d.pop("tracks_json"))
+        result.append(d)
+    return result
+
+
+def delete_session(session_id: str) -> None:
+    with _get_conn() as conn:
+        conn.execute(
+            "DELETE FROM download_sessions WHERE session_id = ?", (session_id,)
+        )
+        conn.commit()
+
+
+def delete_done_sessions() -> None:
+    """Remove all sessions with status 'done' from the database."""
+    with _get_conn() as conn:
+        conn.execute("DELETE FROM download_sessions WHERE status = 'done'")
+        conn.commit()

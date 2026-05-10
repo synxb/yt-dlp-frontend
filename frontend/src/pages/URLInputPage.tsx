@@ -9,6 +9,7 @@ interface URLInputPageProps {
   onSettings: () => void;
   loading: boolean;
   error: string | null;
+  activeDownloads?: number;
 }
 
 function formatDate(iso: string): string {
@@ -16,7 +17,7 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export function URLInputPage({ onFetch, onSettings, loading, error }: URLInputPageProps) {
+export function URLInputPage({ onFetch, onSettings, loading, error, activeDownloads = 0 }: URLInputPageProps) {
   const [url, setUrl] = useState('');
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
@@ -32,7 +33,7 @@ export function URLInputPage({ onFetch, onSettings, loading, error }: URLInputPa
 
   return (
     <div className="page page--center">
-      <AppHeader onSettings={onSettings} />
+      <AppHeader onSettings={onSettings} activeDownloads={activeDownloads} />
 
       <main className="hero">
         <h1 className="hero-title">Download YouTube Playlists</h1>

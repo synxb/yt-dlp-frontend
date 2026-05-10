@@ -1,4 +1,4 @@
-import type { PlaylistInfo, ProgressEvent } from './types';
+import type { DownloadStatus, PlaylistInfo, ProgressEvent } from './types';
 
 const BASE = 'http://localhost:8000';
 
@@ -47,6 +47,48 @@ export function createProgressStream(
 
 export async function cancelDownload(sessionId: string): Promise<void> {
   await fetch(`${BASE}/api/download/${sessionId}`, { method: 'DELETE' });
+}
+
+export interface SessionSnapshot {
+  sessionId: string;
+  playlist: PlaylistInfo;
+  downloadDir: string;
+  status: DownloadStatus;
+  completed: number;
+  total: number;
+}
+
+export async function getDownloadSession(sessionId: string): Promise<SessionSnapshot> {
+  const res = await fetch(`${BASE}/api/download/${sessionId}`);
+  if (!res.ok) throw new Error('Session not found');
+  return res.json();
+}
+
+// ─── Persisted sessions ───────────────────────────────────────────────
+
+export interface PersistedSession {
+  session_id: string;
+  playlist_id: string;
+  title: string;
+  url: string;
+  channel: string | null;
+  thumbnail: string | null;
+  download_dir: string;
+  status: DownloadStatus;
+  completed: number;
+  total: number;
+  tracks: import('./types').TrackInfo[];
+  added_at: string;
+}
+
+export async function listSessions(): Promise<PersistedSession[]> {
+  const res = await fetch(`${BASE}/api/sessions`);
+  if (!res.ok) throw new Error('Failed to fetch sessions');
+  return res.json();
+}
+
+export async function removeSession(sessionId: string): Promise<void> {
+  await fetch(`${BASE}/api/sessions/${sessionId}`, { method: 'DELETE' });
 }
 
 export async function getConfig(): Promise<{ downloadDir: string }> {

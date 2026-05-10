@@ -73,6 +73,8 @@ class DownloadSession:
     _cancelled: bool = False
     # Queue of progress dicts for SSE consumers
     _updates: list[dict] = field(default_factory=list)
+    # Optional callback invoked after each track completes / session ends
+    _persist: Callable[["DownloadSession"], None] | None = field(default=None)
 
     def push_update(self, data: dict) -> None:
         self._updates.append(data)
@@ -231,6 +233,8 @@ def _blocking_download(session: DownloadSession) -> None:
             "completed": session.completed,
             "total": session.total,
         })
+        if session._persist:
+            session._persist(session)
 
     if session._cancelled:
         session.status = DownloadStatus.CANCELLED
@@ -242,6 +246,8 @@ def _blocking_download(session: DownloadSession) -> None:
             "status": DownloadStatus.DONE,
             "downloadDir": str(dest_dir),
         })
+    if session._persist:
+        session._persist(session)
 
 
 def _download_single_track(track: TrackInfo, session: DownloadSession, dest_dir: Path) -> None:

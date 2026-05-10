@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Download,
   FolderOpen,
+  Loader2,
   Music,
   User,
 } from 'lucide-react';
@@ -16,7 +17,8 @@ interface PlaylistPreviewPageProps {
   defaultDownloadDir: string;
   onBack: () => void;
   onSettings: () => void;
-  onDownload: (downloadDir: string) => void;
+  onAddToQueue: (downloadDir: string) => void;
+  activeDownloads?: number;
   loading: boolean;
 }
 
@@ -25,7 +27,8 @@ export function PlaylistPreviewPage({
   defaultDownloadDir,
   onBack,
   onSettings,
-  onDownload,
+  onAddToQueue,
+  activeDownloads = 0,
   loading,
 }: PlaylistPreviewPageProps) {
   const [downloadDir, setDownloadDir] = useState(defaultDownloadDir);
@@ -35,7 +38,13 @@ export function PlaylistPreviewPage({
 
   return (
     <div className="page page--split">
-      <AppHeader onSettings={onSettings}>
+      {loading && (
+        <div className="fullscreen-loading-overlay">
+          <Loader2 size={40} className="fullscreen-loading-spinner" />
+          <span className="fullscreen-loading-label">Adding to queue…</span>
+        </div>
+      )}
+      <AppHeader onSettings={onSettings} activeDownloads={activeDownloads}>
         <button className="back-btn" onClick={onBack}>
           <ArrowLeft size={14} />
           New Search
@@ -108,13 +117,11 @@ export function PlaylistPreviewPage({
         <span style={{ flex: 1 }} />
         <button
           className="download-btn"
-          onClick={() => onDownload(downloadDir)}
+          onClick={() => onAddToQueue(downloadDir)}
           disabled={loading}
         >
           <Download size={18} />
-          {loading
-            ? 'Starting…'
-            : `Download Playlist (${playlist.tracks.length} tracks)`}
+          {`Add to Queue (${playlist.tracks.length} tracks)`}
         </button>
       </div>
     </div>

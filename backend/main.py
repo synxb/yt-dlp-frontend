@@ -92,6 +92,23 @@ async def get_playlist(url: str = Query(..., description="YouTube playlist URL")
     return _playlist_to_dict(playlist)
 
 
+def _persist_session(session: dl.DownloadSession) -> None:
+    """Write the current session state to the DB (called after each track)."""
+    db.upsert_session(
+        session_id=session.id,
+        playlist_id=session.playlist.id,
+        title=session.playlist.title,
+        url=session.playlist.url,
+        channel=session.playlist.channel,
+        thumbnail=session.playlist.thumbnail,
+        download_dir=session.download_dir,
+        status=session.status.value,
+        completed=session.completed,
+        total=session.total,
+        tracks=[_track_to_dict(t) for t in session.playlist.tracks],
+    )
+
+
 class StartDownloadRequest(BaseModel):
     playlistUrl: str
     downloadDir: str | None = None
@@ -116,6 +133,9 @@ async def start_download(body: StartDownloadRequest, background_tasks: Backgroun
         or DEFAULT_DOWNLOAD_DIR
     )
     session = dl.create_download_session(playlist, download_dir)
+    session._persist = _persist_session
+    # Write initial DB row immediately so a refresh can see it right away
+    _persist_session(session)
 
     async def _run_and_record() -> None:
         await dl.run_download(session)
@@ -137,6 +157,46 @@ async def start_download(body: StartDownloadRequest, background_tasks: Backgroun
         "playlist": _playlist_to_dict(playlist),
         "downloadDir": session.download_dir,
     }
+
+
+@app.get("/api/download/{session_id}")
+async def get_download_session(session_id: str):
+    """Return the current snapshot of a download session."""
+    session = dl.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "sessionId": session.id,
+        "playlist": _playlist_to_dict(session.playlist),
+        "downloadDir": session.download_dir,
+        "status": session.status,
+        "completed": session.completed,
+        "total": session.total,
+    }
+
+
+@app.get("/api/sessions")
+async def list_sessions():
+    """Return all persisted download sessions from the DB."""
+    rows = db.get_all_sessions()
+    # Enrich still-active sessions with live in-memory track state
+    result = []
+    for row in rows:
+        live = dl.get_session(row["session_id"])
+        if live:
+            row["tracks"] = [_track_to_dict(t) for t in live.playlist.tracks]
+            row["status"] = live.status.value
+            row["completed"] = live.completed
+        result.append(row)
+    return result
+
+
+@app.delete("/api/sessions/{session_id}")
+async def remove_session(session_id: str):
+    """Remove a finished session from the DB."""
+    db.delete_session(session_id)
+    return {"deleted": True, "sessionId": session_id}
 
 
 @app.get("/api/download/{session_id}/stream")

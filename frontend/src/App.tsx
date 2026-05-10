@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import type { DownloadStatus, PlaylistInfo, ProgressEvent, TrackInfo } from './types';
-import { cancelDownload, createProgressStream, fetchPlaylist, getConfig, startDownload } from './api';
+import type { DownloadStatus, PlaylistInfo, ProgressEvent, TrackInfo, QueueItem } from './types';
+import { cancelDownload, createProgressStream, fetchPlaylist, getConfig, listSessions, removeSession, startDownload } from './api';
 import { URLInputPage } from './pages/URLInputPage';
 import { PlaylistPreviewPage } from './pages/PlaylistPreviewPage';
-import { DownloadProgressPage } from './pages/DownloadProgressPage';
+import { QueuePage } from './pages/QueuePage';
 import { SettingsPage } from './pages/SettingsPage';
 
 export default function App() {
@@ -12,18 +12,12 @@ export default function App() {
 
   const [fetchLoading, setFetchLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-
   const [playlist, setPlaylist] = useState<PlaylistInfo | null>(null);
   const [downloadDir, setDownloadDir] = useState('');
 
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>('pending');
-  const [completedCount, setCompletedCount] = useState(0);
-  const [progressTracks, setProgressTracks] = useState<TrackInfo[]>([]);
-  const [resolvedDownloadDir, setResolvedDownloadDir] = useState('');
-  const [startingDownload, setStartingDownload] = useState(false);
-
-  const esRef = useRef<EventSource | null>(null);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [addingToQueue, setAddingToQueue] = useState(false);
+  const esRefs = useRef<Map<string, EventSource>>(new Map());
 
   useEffect(() => {
     getConfig()
@@ -31,88 +25,156 @@ export default function App() {
       .catch(() => setDownloadDir(''));
   }, []);
 
-  const handleFetch = useCallback(async (url: string) => {
-    setFetchLoading(true);
-    setFetchError(null);
-    try {
-      const info = await fetchPlaylist(url);
-      setPlaylist(info);
-      navigate('/preview');
-    } catch (err: unknown) {
-      setFetchError(err instanceof Error ? err.message : 'Failed to fetch playlist');
-    } finally {
-      setFetchLoading(false);
-    }
-  }, [navigate]);
+  // Cleanup all SSE streams on unmount
+  useEffect(() => {
+    return () => {
+      esRefs.current.forEach((es) => es.close());
+    };
+  }, []);
 
-  const handleProgressEvent = useCallback(
-    (event: ProgressEvent, baseTracksSnapshot?: TrackInfo[]) => {
+  // Restore queue from the DB on mount and re-connect SSE for active sessions
+  useEffect(() => {
+    listSessions()
+      .then((rows) => {
+        if (!rows.length) return;
+
+        const items: QueueItem[] = rows.map((row) => ({
+          sessionId: row.session_id,
+          playlist: {
+            id: row.playlist_id,
+            title: row.title,
+            url: row.url,
+            channel: row.channel,
+            thumbnail: row.thumbnail,
+            tracks: row.tracks,
+          },
+          tracks: row.tracks,
+          downloadStatus: row.status,
+          completed: row.completed,
+          downloadDir: row.download_dir,
+          addedAt: new Date(row.added_at).getTime(),
+        }));
+
+        setQueue(items);
+
+        for (const item of items) {
+          if (item.downloadStatus === 'running' || item.downloadStatus === 'pending') {
+            const es = createProgressStream(item.sessionId, (event) => {
+              handleQueueProgressEvent(item.sessionId, event);
+            });
+            esRefs.current.set(item.sessionId, es);
+          }
+        }
+      })
+      .catch(() => {/* backend not yet ready – silently ignore */});
+  // handleQueueProgressEvent is stable (useCallback [] deps)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const activeDownloads = queue.filter(
+    (item) => item.downloadStatus === 'running' || item.downloadStatus === 'pending',
+  ).length;
+
+  const handleFetch = useCallback(
+    async (url: string) => {
+      setFetchLoading(true);
+      setFetchError(null);
+      try {
+        const info = await fetchPlaylist(url);
+        setPlaylist(info);
+        navigate('/preview');
+      } catch (err: unknown) {
+        setFetchError(err instanceof Error ? err.message : 'Failed to fetch playlist');
+      } finally {
+        setFetchLoading(false);
+      }
+    },
+    [navigate],
+  );
+
+  const handleQueueProgressEvent = useCallback(
+    (sessionId: string, event: ProgressEvent) => {
       if (event.type === 'heartbeat') return;
 
-      if (event.type === 'status' && event.status) {
-        setDownloadStatus(event.status);
-        if (event.downloadDir) setResolvedDownloadDir(event.downloadDir);
-        if (event.status === 'done' || event.status === 'cancelled' || event.status === 'error') {
-          esRef.current?.close();
-        }
-      }
+      setQueue((prev) =>
+        prev
+          .map((item) => {
+            if (item.sessionId !== sessionId) return item;
 
-      if (event.type === 'track_start' && event.trackIndex != null) {
-        setProgressTracks((prev) => {
-          const base = prev.length > 0 ? prev : (baseTracksSnapshot ?? prev);
-          const next = [...base];
-          if (next[event.trackIndex!]) {
-            next[event.trackIndex!] = { ...next[event.trackIndex!], status: 'downloading' };
-          }
-          return next;
-        });
-      }
+            const next = { ...item };
 
-      if (event.type === 'track_progress' && event.trackIndex != null) {
-        setProgressTracks((prev) => {
-          const next = [...prev];
-          if (next[event.trackIndex!]) {
-            next[event.trackIndex!] = {
-              ...next[event.trackIndex!],
-              progress: event.progress ?? prev[event.trackIndex!].progress,
-            };
+          if (event.type === 'status' && event.status) {
+            next.downloadStatus = event.status as DownloadStatus;
+            if (event.downloadDir) next.downloadDir = event.downloadDir;
+            if (
+              event.status === 'done' ||
+              event.status === 'cancelled' ||
+              event.status === 'error'
+            ) {
+              esRefs.current.get(sessionId)?.close();
+              esRefs.current.delete(sessionId);
+            }
+            if (event.status === 'done') {
+              removeSession(sessionId).catch(() => {});
+            }
           }
-          return next;
-        });
-      }
 
-      if (event.type === 'track_done' && event.trackIndex != null) {
-        setProgressTracks((prev) => {
-          const next = [...prev];
-          if (next[event.trackIndex!]) {
-            next[event.trackIndex!] = { ...next[event.trackIndex!], status: 'done', progress: 100 };
+          if (event.type === 'track_start' && event.trackIndex != null) {
+            const tracks = [...next.tracks];
+            if (tracks[event.trackIndex]) {
+              tracks[event.trackIndex] = { ...tracks[event.trackIndex], status: 'downloading' };
+            }
+            next.tracks = tracks;
           }
-          return next;
-        });
-        if (event.completed != null) setCompletedCount(event.completed);
-      }
 
-      if (event.type === 'track_error' && event.trackIndex != null) {
-        setProgressTracks((prev) => {
-          const next = [...prev];
-          if (next[event.trackIndex!]) {
-            next[event.trackIndex!] = {
-              ...next[event.trackIndex!],
-              status: 'error',
-              error: event.error ?? 'Unknown error',
-            };
+          if (event.type === 'track_progress' && event.trackIndex != null) {
+            const tracks = [...next.tracks];
+            if (tracks[event.trackIndex]) {
+              tracks[event.trackIndex] = {
+                ...tracks[event.trackIndex],
+                progress: event.progress ?? tracks[event.trackIndex].progress,
+              };
+            }
+            next.tracks = tracks;
           }
+
+          if (event.type === 'track_done' && event.trackIndex != null) {
+            const tracks = [...next.tracks];
+            if (tracks[event.trackIndex]) {
+              tracks[event.trackIndex] = {
+                ...tracks[event.trackIndex],
+                status: 'done',
+                progress: 100,
+              };
+            }
+            next.tracks = tracks;
+            if (event.completed != null) next.completed = event.completed;
+          }
+
+          if (event.type === 'track_error' && event.trackIndex != null) {
+            const tracks = [...next.tracks];
+            if (tracks[event.trackIndex]) {
+              tracks[event.trackIndex] = {
+                ...tracks[event.trackIndex],
+                status: 'error',
+                error: event.error ?? 'Unknown error',
+              };
+            }
+            next.tracks = tracks;
+          }
+
           return next;
-        });
-      }
+          })
+          .filter((item) => item.downloadStatus !== 'done'),
+      );
     },
     [],
   );
 
-  const handleDownload = useCallback(
+  const handleAddToQueue = useCallback(
     async (dir: string) => {
       if (!playlist) return;
-      setStartingDownload(true);
+      setAddingToQueue(true);
       try {
         const res = await startDownload(playlist.url, dir);
         const initialTracks: TrackInfo[] = res.playlist.tracks.map((t) => ({
@@ -121,78 +183,72 @@ export default function App() {
           progress: 0,
           error: null,
         }));
-        setSessionId(res.sessionId);
-        setProgressTracks(initialTracks);
-        setCompletedCount(0);
-        setDownloadStatus('pending');
-        setResolvedDownloadDir(res.downloadDir);
-        navigate('/progress');
 
-        esRef.current?.close();
-        const snap = [...initialTracks];
-        esRef.current = createProgressStream(res.sessionId, (event: ProgressEvent) => {
-          handleProgressEvent(event, snap);
+        const queueItem: QueueItem = {
+          sessionId: res.sessionId,
+          playlist: res.playlist,
+          tracks: initialTracks,
+          downloadStatus: 'pending',
+          completed: 0,
+          downloadDir: res.downloadDir,
+          addedAt: Date.now(),
+        };
+
+        setQueue((prev) => [...prev, queueItem]);
+
+        const es = createProgressStream(res.sessionId, (event: ProgressEvent) => {
+          handleQueueProgressEvent(res.sessionId, event);
         });
+        esRefs.current.set(res.sessionId, es);
+
+        setPlaylist(null);
+        navigate('/queue');
       } catch (err: unknown) {
         alert(err instanceof Error ? err.message : 'Failed to start download');
       } finally {
-        setStartingDownload(false);
+        setAddingToQueue(false);
       }
     },
-    [playlist, handleProgressEvent, navigate],
+    [playlist, handleQueueProgressEvent, navigate],
   );
 
-  const handleCancel = useCallback(async () => {
-    if (!sessionId) return;
+  const handleCancelQueueItem = useCallback(async (sessionId: string) => {
     await cancelDownload(sessionId);
-    esRef.current?.close();
-  }, [sessionId]);
+    esRefs.current.get(sessionId)?.close();
+    esRefs.current.delete(sessionId);
+  }, []);
 
-  const handleOpenFolder = useCallback(() => {
-    if (resolvedDownloadDir) {
-      window.open(`file:///${resolvedDownloadDir.replace(/\\/g, '/')}`, '_blank');
+  const handleClearCompleted = useCallback(() => {
+    setQueue((prev) => {
+      const toRemove = prev.filter(
+        (item) =>
+          item.downloadStatus !== 'running' && item.downloadStatus !== 'pending',
+      );
+      for (const item of toRemove) {
+        removeSession(item.sessionId).catch(() => {});
+      }
+      return prev.filter(
+        (item) => item.downloadStatus === 'running' || item.downloadStatus === 'pending',
+      );
+    });
+  }, []);
+
+  const handleOpenFolder = useCallback((dir: string) => {
+    if (dir) {
+      window.open(`file:///${dir.replace(/\\/g, '/')}`, '_blank');
     }
-  }, [resolvedDownloadDir]);
-
-  const handleNewDownload = useCallback(() => {
-    esRef.current?.close();
-    setSessionId(null);
-    setPlaylist(null);
-    setProgressTracks([]);
-    setCompletedCount(0);
-    setDownloadStatus('pending');
-    setFetchError(null);
-    navigate('/');
-  }, [navigate]);
+  }, []);
 
   const handleOpenSettings = useCallback(() => {
     navigate('/settings');
   }, [navigate]);
 
   const handleSettingsBack = useCallback(() => {
-    // Reload downloadDir from config so PlaylistPreview picks up any changes
-    getConfig().then((c) => setDownloadDir(c.downloadDir)).catch(() => {});
+    getConfig()
+      .then((c) => setDownloadDir(c.downloadDir))
+      .catch(() => {});
     navigate(-1);
   }, [navigate]);
-
-  useEffect(() => () => esRef.current?.close(), []);
-
-  // Auto-navigate back to URL input when download finishes with no errors
-  useEffect(() => {
-    if (downloadStatus !== 'done') return;
-    const hasErrors = progressTracks.some((t) => t.status === 'error');
-    if (hasErrors) return;
-    const timer = setTimeout(() => {
-      setSessionId(null);
-      setPlaylist(null);
-      setProgressTracks([]);
-      setCompletedCount(0);
-      setDownloadStatus('pending');
-      setFetchError(null);
-      navigate('/');
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [downloadStatus, progressTracks, navigate]);
 
   return (
     <Routes>
@@ -204,6 +260,7 @@ export default function App() {
             onSettings={handleOpenSettings}
             loading={fetchLoading}
             error={fetchError}
+            activeDownloads={activeDownloads}
           />
         }
       />
@@ -214,10 +271,14 @@ export default function App() {
             <PlaylistPreviewPage
               playlist={playlist}
               defaultDownloadDir={downloadDir}
-              onBack={handleNewDownload}
+              onBack={() => {
+                setPlaylist(null);
+                navigate('/');
+              }}
               onSettings={handleOpenSettings}
-              onDownload={handleDownload}
-              loading={startingDownload}
+              onAddToQueue={handleAddToQueue}
+              activeDownloads={activeDownloads}
+              loading={addingToQueue}
             />
           ) : (
             <URLInputPage
@@ -225,40 +286,25 @@ export default function App() {
               onSettings={handleOpenSettings}
               loading={fetchLoading}
               error={fetchError}
+              activeDownloads={activeDownloads}
             />
           )
         }
       />
       <Route
-        path="/progress"
+        path="/queue"
         element={
-          playlist ? (
-            <DownloadProgressPage
-              playlist={playlist}
-              tracks={progressTracks}
-              completed={completedCount}
-              downloadStatus={downloadStatus}
-              downloadDir={resolvedDownloadDir}
-              onCancel={handleCancel}
-              onOpenFolder={handleOpenFolder}
-              onNewDownload={handleNewDownload}
-              onSettings={handleOpenSettings}
-            />
-          ) : (
-            <URLInputPage
-              onFetch={handleFetch}
-              onSettings={handleOpenSettings}
-              loading={fetchLoading}
-              error={fetchError}
-            />
-          )
+          <QueuePage
+            queue={queue}
+            onCancel={handleCancelQueueItem}
+            onClearCompleted={handleClearCompleted}
+            onOpenFolder={handleOpenFolder}
+            onSettings={handleOpenSettings}
+            activeDownloads={activeDownloads}
+          />
         }
       />
-      <Route
-        path="/settings"
-        element={<SettingsPage onBack={handleSettingsBack} />}
-      />
-      {/* Catch-all */}
+      <Route path="/settings" element={<SettingsPage onBack={handleSettingsBack} />} />
       <Route
         path="*"
         element={
@@ -267,12 +313,10 @@ export default function App() {
             onSettings={handleOpenSettings}
             loading={fetchLoading}
             error={fetchError}
+            activeDownloads={activeDownloads}
           />
         }
       />
     </Routes>
   );
 }
-
-
-
