@@ -112,6 +112,7 @@ def _persist_session(session: dl.DownloadSession) -> None:
 class StartDownloadRequest(BaseModel):
     playlistUrl: str
     downloadDir: str | None = None
+    trackIds: list[str] | None = None
 
 
 @app.post("/api/download")
@@ -132,6 +133,15 @@ async def start_download(body: StartDownloadRequest, background_tasks: Backgroun
         (body.downloadDir or db.get_setting("download_dir") or DEFAULT_DOWNLOAD_DIR).strip()
         or DEFAULT_DOWNLOAD_DIR
     )
+
+    # Filter to only the selected tracks if the caller specified a subset
+    if body.trackIds is not None:
+        id_set = set(body.trackIds)
+        playlist.tracks = [t for t in playlist.tracks if t.id in id_set]
+        # Re-index so track indices are contiguous starting at 0
+        for i, t in enumerate(playlist.tracks):
+            t.index = i
+
     session = dl.create_download_session(playlist, download_dir)
     session._persist = _persist_session
     # Write initial DB row immediately so a refresh can see it right away

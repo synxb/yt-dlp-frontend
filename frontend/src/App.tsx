@@ -172,11 +172,11 @@ export default function App() {
   );
 
   const handleAddToQueue = useCallback(
-    async (dir: string) => {
+    async (dir: string, selectedIds: Set<string>) => {
       if (!playlist) return;
       setAddingToQueue(true);
       try {
-        const res = await startDownload(playlist.url, dir);
+        const res = await startDownload(playlist.url, dir, [...selectedIds]);
         const initialTracks: TrackInfo[] = res.playlist.tracks.map((t) => ({
           ...t,
           status: 'queued' as const,

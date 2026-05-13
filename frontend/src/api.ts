@@ -14,11 +14,12 @@ export async function fetchPlaylist(url: string): Promise<PlaylistInfo> {
 export async function startDownload(
   playlistUrl: string,
   downloadDir?: string,
+  trackIds?: string[],
 ): Promise<{ sessionId: string; playlist: PlaylistInfo; downloadDir: string }> {
   const res = await fetch(`${BASE}/api/download`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playlistUrl, downloadDir }),
+    body: JSON.stringify({ playlistUrl, downloadDir, trackIds }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Unknown error' }));

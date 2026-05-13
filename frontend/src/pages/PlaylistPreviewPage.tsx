@@ -17,7 +17,7 @@ interface PlaylistPreviewPageProps {
   defaultDownloadDir: string;
   onBack: () => void;
   onSettings: () => void;
-  onAddToQueue: (downloadDir: string) => void;
+  onAddToQueue: (downloadDir: string, selectedIds: Set<string>) => void;
   activeDownloads?: number;
   loading: boolean;
 }
@@ -33,6 +33,31 @@ export function PlaylistPreviewPage({
 }: PlaylistPreviewPageProps) {
   const [downloadDir, setDownloadDir] = useState(defaultDownloadDir);
   const [showPicker, setShowPicker] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(playlist.tracks.map((t) => t.id)),
+  );
+
+  const allSelected = selectedIds.size === playlist.tracks.length;
+
+  function toggleTrack(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(playlist.tracks.map((t) => t.id)));
+    }
+  }
 
   const totalDuration = playlist.tracks.reduce((acc, t) => acc + (t.duration ?? 0), 0);
 
@@ -88,10 +113,23 @@ export function PlaylistPreviewPage({
         <div className="right-panel">
           <div className="track-list-header">
             <span className="track-list-title">Playlist Contents</span>
+            <span style={{ flex: 1 }} />
+            <span className="track-selection-count">
+              {selectedIds.size} / {playlist.tracks.length} selected
+            </span>
+            <button className="select-all-btn" onClick={toggleAll}>
+              {allSelected ? 'Deselect All' : 'Select All'}
+            </button>
           </div>
           <div className="track-list">
             {playlist.tracks.map((track, i) => (
-              <TrackRow key={track.id} track={track} index={i} />
+              <TrackRow
+                key={track.id}
+                track={track}
+                index={i}
+                selected={selectedIds.has(track.id)}
+                onToggle={() => toggleTrack(track.id)}
+              />
             ))}
           </div>
         </div>
@@ -117,11 +155,11 @@ export function PlaylistPreviewPage({
         <span style={{ flex: 1 }} />
         <button
           className="download-btn"
-          onClick={() => onAddToQueue(downloadDir)}
-          disabled={loading}
+          onClick={() => onAddToQueue(downloadDir, selectedIds)}
+          disabled={loading || selectedIds.size === 0}
         >
           <Download size={18} />
-          {`Add to Queue (${playlist.tracks.length} tracks)`}
+          {`Add to Queue (${selectedIds.size} track${selectedIds.size !== 1 ? 's' : ''})`}
         </button>
       </div>
     </div>
@@ -129,3 +167,4 @@ export function PlaylistPreviewPage({
 }
 
 // Youtube28 component removed — logo now lives in AppHeader
+

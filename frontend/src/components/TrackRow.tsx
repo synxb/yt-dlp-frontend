@@ -10,11 +10,38 @@ export function formatDuration(seconds: number | null): string {
 interface TrackRowProps {
   track: TrackInfo;
   index: number;
+  selected?: boolean;
+  onToggle?: () => void;
 }
 
-export function TrackRow({ track, index }: TrackRowProps) {
+export function TrackRow({ track, index, selected = true, onToggle }: TrackRowProps) {
+  const classes = [
+    'track-row',
+    onToggle ? 'track-row--selectable' : '',
+    !selected ? 'track-row--deselected' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      onToggle?.();
+    }
+  }
+
   return (
-    <div className="track-row">
+    <div
+      className={classes}
+      onClick={onToggle}
+      role={onToggle ? 'checkbox' : undefined}
+      aria-checked={onToggle ? selected : undefined}
+      tabIndex={onToggle ? 0 : undefined}
+      onKeyDown={onToggle ? handleKeyDown : undefined}
+    >
+      {onToggle && (
+        <span className={`track-checkbox${selected ? ' track-checkbox--checked' : ''}`} />
+      )}
       <span className="track-num">{String(index + 1).padStart(2, '0')}</span>
       {track.thumbnail ? (
         <img src={track.thumbnail} alt="" className="track-thumb" />
