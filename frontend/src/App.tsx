@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import type { DownloadStatus, PlaylistInfo, ProgressEvent, TrackInfo, QueueItem } from './types';
-import { cancelDownload, createProgressStream, fetchPlaylist, getConfig, listSessions, removeSession, startDownload } from './api';
+import type { DLoadLogLine, DLoadPageState, DownloadStatus, PlaylistInfo, ProgressEvent, TrackInfo, QueueItem } from './types';
+import { cancelDownload, createProgressStream, fetchPlaylist, getConfig, getDLoadStatus, getDLoadAuthUrl, startDLoad, stopDLoad, createDLoadStream, listSessions, removeSession, startDownload, type DLoadEvent } from './api';
 import { URLInputPage } from './pages/URLInputPage';
 import { PlaylistPreviewPage } from './pages/PlaylistPreviewPage';
 import { QueuePage } from './pages/QueuePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { DLoadPage } from './pages/DLoadPage';
 
 export default function App() {
   const navigate = useNavigate();
@@ -19,17 +20,38 @@ export default function App() {
   const [addingToQueue, setAddingToQueue] = useState(false);
   const esRefs = useRef<Map<string, EventSource>>(new Map());
 
+  // ── DLoad state (lifted so it survives navigation) ──────────────────
+  const [dloadPageState, setDloadPageState] = useState<DLoadPageState>('checking');
+  const [dloadTracks, setDloadTracks] = useState<TrackInfo[]>([]);
+  const [dloadLogs, setDloadLogs] = useState<DLoadLogLine[]>([]);
+  const [dloadStatusNote, setDloadStatusNote] = useState('');
+  const dloadEsRef = useRef<EventSource | null>(null);
+
   useEffect(() => {
     getConfig()
       .then((c) => setDownloadDir(c.downloadDir))
       .catch(() => setDownloadDir(''));
   }, []);
 
+  // Check DLoad auth status once on mount
+  useEffect(() => {
+    getDLoadStatus()
+      .then((s) => {
+        if (!s.hasClientSecrets) setDloadPageState('no_secrets');
+        else if (!s.authorized) setDloadPageState('needs_auth');
+        else setDloadPageState((cur) => cur === 'checking' ? 'ready' : cur);
+      })
+      .catch(() => setDloadPageState('needs_auth'));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Cleanup all SSE streams on unmount
   useEffect(() => {
     return () => {
       esRefs.current.forEach((es) => es.close());
+      dloadEsRef.current?.close();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Restore queue from the DB on mount and re-connect SSE for active sessions
@@ -239,6 +261,98 @@ export default function App() {
     }
   }, []);
 
+  // ── DLoad helpers ─────────────────────────────────────────────────
+  function makeDLoadTrack(index: number, title: string): TrackInfo {
+    return { index, id: String(index), title, url: '', thumbnail: null, duration: null, status: 'queued', progress: 0, error: null };
+  }
+
+  const handleDLoadEvent = useCallback((e: DLoadEvent) => {
+    switch (e.type) {
+      case 'log':
+        setDloadLogs((prev) => [...prev, { level: e.level, message: e.message }]);
+        break;
+      case 'track_start':
+        setDloadTracks((prev) => {
+          const next = [...prev];
+          while (next.length <= e.index) next.push(makeDLoadTrack(next.length, ''));
+          next[e.index] = makeDLoadTrack(e.index, e.title);
+          return next;
+        });
+        break;
+      case 'track_progress':
+        setDloadTracks((prev) =>
+          prev.map((t) => t.index === e.index ? { ...t, status: 'downloading', progress: e.progress } : t),
+        );
+        break;
+      case 'track_done':
+        setDloadTracks((prev) =>
+          prev.map((t) => t.index === e.index ? { ...t, status: 'done', progress: 100 } : t),
+        );
+        break;
+      case 'track_error':
+        setDloadTracks((prev) =>
+          prev.map((t) => t.index === e.index ? { ...t, status: 'error', error: e.error } : t),
+        );
+        break;
+      case 'cancelled':
+        dloadEsRef.current?.close();
+        dloadEsRef.current = null;
+        setDloadPageState('cancelled');
+        break;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleDLoadAuthorize = useCallback(async () => {
+    try {
+      window.location.href = await getDLoadAuthUrl();
+    } catch (err) {
+      setDloadStatusNote(err instanceof Error ? err.message : 'Failed to get auth URL');
+    }
+  }, []);
+
+  const handleDLoadStart = useCallback(async () => {
+    setDloadTracks([]);
+    setDloadLogs([]);
+    setDloadStatusNote('');
+    setDloadPageState('running');
+    try {
+      await startDLoad();
+    } catch (err) {
+      setDloadStatusNote(err instanceof Error ? err.message : 'Failed to start DLoad');
+      setDloadPageState('ready');
+      return;
+    }
+    const es = createDLoadStream(handleDLoadEvent, () => {
+      dloadEsRef.current = null;
+      setDloadPageState((s) => s === 'running' ? 'done' : s);
+    });
+    dloadEsRef.current = es;
+  }, [handleDLoadEvent]);
+
+  const handleDLoadStop = useCallback(async () => {
+    await stopDLoad().catch(() => {});
+    dloadEsRef.current?.close();
+    dloadEsRef.current = null;
+    setDloadPageState('cancelled');
+  }, []);
+
+  const handleDLoadReset = useCallback(() => {
+    setDloadTracks([]);
+    setDloadLogs([]);
+    setDloadStatusNote('');
+    setDloadPageState('ready');
+  }, []);
+
+  const handleDLoadAuthResult = useCallback((result: 'success' | 'error', detail?: string) => {
+    if (result === 'error') {
+      setDloadStatusNote(`Authorization failed: ${detail ?? 'Unknown error'}`);
+    } else {
+      setDloadStatusNote('Authorization successful!');
+      setDloadPageState('ready');
+    }
+  }, []);
+
   const handleOpenSettings = useCallback(() => {
     navigate('/settings');
   }, [navigate]);
@@ -305,6 +419,25 @@ export default function App() {
         }
       />
       <Route path="/settings" element={<SettingsPage onBack={handleSettingsBack} />} />
+      <Route
+        path="/dload"
+        element={
+          <DLoadPage
+            onSettings={handleOpenSettings}
+            activeDownloads={activeDownloads}
+            pageState={dloadPageState}
+            tracks={dloadTracks}
+            logs={dloadLogs}
+            statusNote={dloadStatusNote}
+            onStart={handleDLoadStart}
+            onStop={handleDLoadStop}
+            onReset={handleDLoadReset}
+            onAuthorize={handleDLoadAuthorize}
+            onAuthResult={handleDLoadAuthResult}
+            onClearLogs={() => setDloadLogs([])}
+          />
+        }
+      />
       <Route
         path="*"
         element={

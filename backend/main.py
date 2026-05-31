@@ -22,15 +22,16 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 import downloader as dl
 from config import DEFAULT_DOWNLOAD_DIR
 import database as db
+import dload as dl_dload
 
 app = FastAPI(title="YT-DLP Frontend API", version="1.0.0")
 
@@ -390,3 +391,91 @@ async def health():
 async def get_history():
     """Return recent download history (most recent first)."""
     return db.get_history(limit=50)
+
+
+# ─── DLoad endpoints ─────────────────────────────────────────────────────
+
+_DLOAD_CALLBACK = "http://localhost:8000/api/dload/oauth-callback"
+_FRONTEND_DLOAD  = "http://localhost:5173/dload"
+
+
+@app.get("/api/dload/status")
+async def dload_status():
+    """Report whether client_secrets.json is present and OAuth credentials
+    have already been stored."""
+    has_secrets = dl_dload.client_secrets_exist()
+    creds_json  = db.get_setting("dload_credentials")
+    authorized  = bool(creds_json and dl_dload.credentials_valid())
+    return {
+        "hasClientSecrets": has_secrets,
+        "authorized": authorized,
+    }
+
+
+@app.get("/api/dload/auth-url")
+async def dload_auth_url():
+    """Return the Google OAuth authorization URL."""
+    if not dl_dload.client_secrets_exist():
+        raise HTTPException(
+            status_code=400,
+            detail="client_secrets.json not found in backend directory",
+        )
+    auth_url = dl_dload.get_auth_url(_DLOAD_CALLBACK)
+    return {"authUrl": auth_url}
+
+
+@app.get("/api/dload/oauth-callback")
+async def dload_oauth_callback(request: Request, code: str = Query(None), error: str = Query(None)):
+    """Receive the OAuth redirect, exchange the code and store credentials."""
+    if error:
+        return RedirectResponse(url=f"{_FRONTEND_DLOAD}?auth=error&detail={error}", status_code=302)
+    if not code:
+        return RedirectResponse(url=f"{_FRONTEND_DLOAD}?auth=error&detail=missing_code", status_code=302)
+    try:
+        creds_json = dl_dload.exchange_oauth_code(code, _DLOAD_CALLBACK)
+        db.set_setting("dload_credentials", creds_json)
+    except Exception as exc:
+        return RedirectResponse(url=f"{_FRONTEND_DLOAD}?auth=error&detail={str(exc)}", status_code=302)
+    return RedirectResponse(url=f"{_FRONTEND_DLOAD}?auth=success", status_code=302)
+
+
+@app.post("/api/dload/start")
+async def dload_start(background_tasks: BackgroundTasks):
+    """Create a DLoad session and start the background process."""
+    creds_json = db.get_setting("dload_credentials")
+    if not creds_json or not dl_dload.credentials_valid():
+        raise HTTPException(status_code=401, detail="Not authorized — complete Google OAuth first")
+
+    download_dir = db.get_setting("download_dir") or DEFAULT_DOWNLOAD_DIR
+    loop = asyncio.get_running_loop()
+    session = dl_dload.create_session(loop)
+
+    async def _run():
+        await dl_dload.run_dload(session, download_dir, creds_json)
+
+    background_tasks.add_task(_run)
+    return {"started": True}
+
+
+@app.get("/api/dload/stream")
+async def dload_stream():
+    """SSE stream of log messages from the active DLoad session."""
+    session = dl_dload.get_active_session()
+    if not session:
+        raise HTTPException(status_code=404, detail="No active DLoad session")
+
+    async def _generator():
+        async for msg in session.stream():
+            yield {"data": json.dumps(msg)}
+
+    return EventSourceResponse(_generator())
+
+
+@app.post("/api/dload/stop")
+async def dload_stop():
+    """Cancel the currently running DLoad session."""
+    session = dl_dload.get_active_session()
+    if not session:
+        raise HTTPException(status_code=404, detail="No active DLoad session")
+    session.cancel()
+    return {"stopped": True}

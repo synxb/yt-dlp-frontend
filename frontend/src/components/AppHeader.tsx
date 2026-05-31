@@ -13,6 +13,7 @@ export function AppHeader({ onSettings, children, activeDownloads = 0 }: AppHead
 
   const onSearch = location.pathname === '/' || location.pathname === '/preview';
   const onQueue = location.pathname === '/queue';
+  const onDLoad = location.pathname === '/dload';
 
   return (
     <header className="header">
@@ -39,6 +40,12 @@ export function AppHeader({ onSettings, children, activeDownloads = 0 }: AppHead
           {activeDownloads > 0 && (
             <span className="header-nav-badge">{activeDownloads}</span>
           )}
+        </button>
+        <button
+          className={`header-nav-btn${onDLoad ? ' header-nav-btn--active' : ''}`}
+          onClick={() => navigate('/dload')}
+        >
+          DLoad
         </button>
       </nav>
       {children}

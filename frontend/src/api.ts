@@ -185,3 +185,68 @@ export async function triggerPlexScan(): Promise<void> {
     throw new Error(err.detail ?? 'Failed to trigger Plex scan');
   }
 }
+
+// ─── DLoad ────────────────────────────────────────────────────────────────
+
+export interface DLoadStatus {
+  hasClientSecrets: boolean;
+  authorized: boolean;
+}
+
+export type DLoadEvent =
+  | { type: 'log';            level: 'info' | 'warning' | 'error' | 'success'; message: string }
+  | { type: 'track_start';    index: number; title: string; total: number }
+  | { type: 'track_progress'; index: number; progress: number }
+  | { type: 'track_done';     index: number }
+  | { type: 'track_error';    index: number; error: string }
+  | { type: 'cancelled' }
+  | { type: 'heartbeat' };
+
+export async function getDLoadStatus(): Promise<DLoadStatus> {
+  const res = await fetch(`${BASE}/api/dload/status`);
+  if (!res.ok) throw new Error('Failed to fetch DLoad status');
+  return res.json();
+}
+
+export async function getDLoadAuthUrl(): Promise<string> {
+  const res = await fetch(`${BASE}/api/dload/auth-url`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new Error(err.detail ?? 'Failed to get auth URL');
+  }
+  const data = await res.json();
+  return data.authUrl;
+}
+
+export async function startDLoad(): Promise<void> {
+  const res = await fetch(`${BASE}/api/dload/start`, { method: 'POST' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new Error(err.detail ?? 'Failed to start DLoad');
+  }
+}
+
+export async function stopDLoad(): Promise<void> {
+  await fetch(`${BASE}/api/dload/stop`, { method: 'POST' });
+}
+
+export function createDLoadStream(
+  onEvent: (e: DLoadEvent) => void,
+  onDone?: () => void,
+): EventSource {
+  const es = new EventSource(`${BASE}/api/dload/stream`);
+  es.onmessage = (event) => {
+    try {
+      const data: DLoadEvent = JSON.parse(event.data);
+      if (data.type === 'heartbeat') return;
+      onEvent(data);
+    } catch {
+      // ignore malformed events
+    }
+  };
+  es.onerror = () => {
+    es.close();
+    onDone?.();
+  };
+  return es;
+}

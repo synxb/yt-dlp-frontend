@@ -50,3 +50,17 @@ export interface ProgressEvent {
   error?: string;
   downloadDir?: string;
 }
+
+export type DLoadPageState =
+  | 'checking'
+  | 'no_secrets'
+  | 'needs_auth'
+  | 'ready'
+  | 'running'
+  | 'done'
+  | 'cancelled';
+
+export interface DLoadLogLine {
+  level: 'info' | 'warning' | 'error' | 'success';
+  message: string;
+}
