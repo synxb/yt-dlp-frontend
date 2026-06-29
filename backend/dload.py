@@ -124,6 +124,33 @@ def _load_credentials(creds_json: str) -> Credentials:
     return creds
 
 
+def _fetch_all_playlist_items(youtube) -> list[dict]:
+    """Return every item in the DLoad playlist, following pagination.
+
+    Uses the authenticated Data API so all items the account can see are
+    included — yt-dlp's anonymous extraction silently drops many videos and
+    only returns a partial list.
+    """
+    items: list[dict] = []
+    page_token: str | None = None
+    while True:
+        response = (
+            youtube.playlistItems()
+            .list(
+                part="contentDetails,snippet",
+                playlistId=PLAYLIST_ID,
+                maxResults=50,
+                pageToken=page_token,
+            )
+            .execute()
+        )
+        items.extend(response.get("items", []))
+        page_token = response.get("nextPageToken")
+        if not page_token:
+            break
+    return items
+
+
 # ─── DLoad session ────────────────────────────────────────────────────────
 
 _SENTINEL = object()  # signals end-of-stream
@@ -237,25 +264,18 @@ def _run_dload_sync(
             session.emit({"type": "cancelled"})
             return
 
-        # ── 2. Fetch playlist metadata (flat, fast) ───────────────────────
+        # ── 2. Fetch playlist items via the authenticated Data API ───────
+        # Use the API (not yt-dlp's anonymous flat extraction) so we get every
+        # item the account can see — anonymous extraction only returned a
+        # partial list.
         session.log("Fetching playlist info…")
-        flat_opts = {
-            "quiet": True,
-            "no_warnings": True,
-            "extract_flat": "in_playlist",
-            "skip_download": True,
-            "ignoreerrors": True,
-            "no_color": True,
-        }
-        with yt_dlp.YoutubeDL(flat_opts) as ydl:
-            info = ydl.extract_info(PLAYLIST_URL, download=False)
+        creds = _load_credentials(creds_json)
+        youtube = googleapiclient.discovery.build(
+            "youtube", "v3", credentials=creds, cache_discovery=False
+        )
+        all_items = _fetch_all_playlist_items(youtube)
 
-        if not info or "entries" not in info:
-            session.log("Could not fetch playlist info", "error")
-            return
-
-        entries = [e for e in info.get("entries", []) if e]
-        total = len(entries)
+        total = len(all_items)
         if total == 0:
             session.log("Playlist is empty", "warning")
             return
@@ -265,9 +285,10 @@ def _run_dload_sync(
         # Pre-populate ALL tracks immediately so the frontend shows the full
         # list before any download begins.
         tracks_info: list[tuple[int, str, str]] = []
-        for i, entry in enumerate(entries):
-            title = entry.get("title") or f"Track {i + 1}"
-            url = entry.get("url") or entry.get("webpage_url") or ""
+        for i, item in enumerate(all_items):
+            title = item["snippet"]["title"]
+            video_id = item["contentDetails"]["videoId"]
+            url = f"https://www.youtube.com/watch?v={video_id}"
             tracks_info.append((i, title, url))
             session.track_start(i, title, total)
 
@@ -351,34 +372,9 @@ def _run_dload_sync(
                 session.log(f"Error reading {mp3_file.name}: {exc}", "error")
 
         # ── 5. Wipe playlist ──────────────────────────────────────────────
-        session.log("Connecting to YouTube API…")
-        creds = _load_credentials(creds_json)
-        youtube = googleapiclient.discovery.build(
-            "youtube", "v3", credentials=creds, cache_discovery=False
-        )
-
+        # Re-fetch the current items so deletions reflect the latest state.
         session.log("Fetching playlist items…")
-        all_items: list[dict] = []
-        response = (
-            youtube.playlistItems()
-            .list(part="contentDetails,snippet", playlistId=PLAYLIST_ID, maxResults=100)
-            .execute()
-        )
-        all_items.extend(response["items"])
-        next_page = response.get("nextPageToken")
-        while next_page:
-            response = (
-                youtube.playlistItems()
-                .list(
-                    part="contentDetails,snippet",
-                    playlistId=PLAYLIST_ID,
-                    maxResults=100,
-                    pageToken=next_page,
-                )
-                .execute()
-            )
-            all_items.extend(response["items"])
-            next_page = response.get("nextPageToken")
+        all_items = _fetch_all_playlist_items(youtube)
 
         session.log(f"Found {len(all_items)} playlist item(s)")
 
