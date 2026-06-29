@@ -32,6 +32,29 @@ A React + Python full-stack app for downloading YouTube playlists as MP3.
 3. Make sure `yt-dlp` and `ffmpeg` are on your PATH.  
    FFmpeg is required for MP3 conversion and thumbnail embedding.
 
+4. Install the **Deno** JavaScript runtime (required by yt-dlp to solve
+   YouTube's JS challenges — see the [yt-dlp EJS guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS)).
+   The EJS solver scripts themselves are bundled via the `yt-dlp[default]`
+   dependency, so no extra Python package is needed.
+
+   ```bash
+   # Windows
+   winget install denoland.deno
+
+   # Linux / macOS
+   curl -fsSL https://deno.land/install.sh | sh
+   ```
+
+   Verify it is available:
+   ```bash
+   deno --version
+   pip show yt-dlp-ejs   # should report an installed version
+   ```
+
+   > On Linux, Deno installs to `~/.deno/bin`. `start-backend.sh` adds this to
+   > PATH automatically. If you run uvicorn another way, make sure `deno` is on
+   > the PATH of that process (or install it to `/usr/local/bin`).
+
 ### Frontend
 
 ```bash
@@ -148,6 +171,8 @@ After=network.target
 
 [Service]
 WorkingDirectory=/path/to/yt-dlp-frontend/backend
+Environment=PUBLIC_BASE_URL=https://ytdlp.lan.hackinginstyle.com
+Environment=PATH=/home/youruser/.deno/bin:/usr/local/bin:/usr/bin:/bin
 ExecStart=/path/to/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
 Restart=on-failure
 
@@ -171,7 +196,33 @@ const BASE = '';
 
 Then rebuild: `npm run build`.
 
-## yt-dlp arguments
+### 5. Configure the Google OAuth redirect (DLoad feature)
+
+The "DLoad" feature authorizes against Google/YouTube via OAuth. The redirect
+URL must match the host the app is served from.
+
+1. **Set the public base URL** so the backend builds the correct redirect.
+   `start-backend.sh` already exports it for the deployed host:
+
+   ```bash
+   export PUBLIC_BASE_URL="https://ytdlp.lan.hackinginstyle.com"
+   ```
+
+   When `PUBLIC_BASE_URL` is unset (e.g. local Windows dev via
+   `start-backend.bat`), the app falls back to
+   `http://localhost:8000` / `http://localhost:5173` automatically.
+
+2. **Register the redirect URI in Google Cloud Console.**
+   Open your OAuth 2.0 Client → *Authorized redirect URIs* and add both:
+
+   ```text
+   http://localhost:8000/api/dload/oauth-callback
+   https://ytdlp.lan.hackinginstyle.com/api/dload/oauth-callback
+   ```
+
+   The first is for local development; the second for the deployed service.
+
+
 
 The download arguments are defined in `yt-dlp-arguments.txt` at the project root.  
 The backend's `config.py` mirrors these settings as Python options passed directly to yt-dlp.

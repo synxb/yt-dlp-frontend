@@ -4,6 +4,11 @@ from pathlib import Path
 # Default download directory — user's Music/YT-Downloads folder
 DEFAULT_DOWNLOAD_DIR = str(Path.home() / "Music" / "YT-Downloads")
 
+# Public base URL of the deployed service (scheme + host, no trailing slash).
+# Set this in production, e.g. PUBLIC_BASE_URL=https://ytdlp.lan.hackinginstyle.com
+# When empty, the app falls back to localhost dev URLs for the OAuth redirect.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
 # yt-dlp base options parsed from yt-dlp-arguments.txt (project root)
 YT_DLP_BASE_OPTIONS: dict = {
     "ignoreerrors": True,

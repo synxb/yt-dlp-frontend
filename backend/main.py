@@ -29,15 +29,19 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 import downloader as dl
-from config import DEFAULT_DOWNLOAD_DIR
+from config import DEFAULT_DOWNLOAD_DIR, PUBLIC_BASE_URL
 import database as db
 import dload as dl_dload
 
 app = FastAPI(title="YT-DLP Frontend API", version="1.0.0")
 
+_cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+if PUBLIC_BASE_URL:
+    _cors_origins.append(PUBLIC_BASE_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -367,8 +371,14 @@ async def list_dir(path: str | None = None):
     remote/headless servers without a GUI.
     """
     base = Path(path) if path else Path.home()
-    if not base.exists() or not base.is_dir():
-        raise HTTPException(status_code=400, detail="Path does not exist or is not a directory")
+    # Walk up to the nearest existing ancestor so the picker can still open
+    # when the requested path (e.g. a not-yet-created download dir) is missing.
+    while not (base.exists() and base.is_dir()):
+        parent = base.parent
+        if parent == base:
+            base = Path.home()
+            break
+        base = parent
 
     try:
         dirs = sorted(
@@ -395,8 +405,16 @@ async def get_history():
 
 # ─── DLoad endpoints ─────────────────────────────────────────────────────
 
-_DLOAD_CALLBACK = "http://localhost:8000/api/dload/oauth-callback"
-_FRONTEND_DLOAD  = "http://localhost:5173/dload"
+# In production the frontend and backend share one origin (nginx proxies /api
+# to the backend), so a single PUBLIC_BASE_URL drives both the OAuth callback
+# and the post-auth frontend redirect.  When unset, fall back to dev URLs where
+# the backend (8000) and Vite frontend (5173) run on separate ports.
+if PUBLIC_BASE_URL:
+    _DLOAD_CALLBACK = f"{PUBLIC_BASE_URL}/api/dload/oauth-callback"
+    _FRONTEND_DLOAD = f"{PUBLIC_BASE_URL}/dload"
+else:
+    _DLOAD_CALLBACK = "http://localhost:8000/api/dload/oauth-callback"
+    _FRONTEND_DLOAD = "http://localhost:5173/dload"
 
 
 @app.get("/api/dload/status")
