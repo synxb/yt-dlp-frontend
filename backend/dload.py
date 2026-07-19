@@ -23,6 +23,7 @@ from mutagen.mp3 import MP3
 
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleRequest
+from google.auth.exceptions import RefreshError
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 
@@ -50,6 +51,13 @@ def _strip(text: str) -> str:
 # ─── OAuth helpers ────────────────────────────────────────────────────────
 
 _pending_flow: google_auth_oauthlib.flow.Flow | None = None
+
+
+class CredentialsExpired(Exception):
+    """Raised when the stored refresh token is no longer valid.
+
+    The caller should prompt the user to re-run the Google OAuth flow.
+    """
 
 
 def client_secrets_exist() -> bool:
@@ -111,7 +119,18 @@ def _load_credentials(creds_json: str) -> Credentials:
         scopes=data.get("scopes"),
     )
     if creds.expired and creds.refresh_token:
-        creds.refresh(GoogleRequest())
+        try:
+            creds.refresh(GoogleRequest())
+        except RefreshError as exc:
+            # The refresh token has been revoked or expired (common when the
+            # Google OAuth consent screen is in "Testing" mode, where refresh
+            # tokens expire after 7 days). Drop the stale credentials so the
+            # app reports "not authorized" and prompts a fresh OAuth flow.
+            database.set_setting("dload_credentials", "")
+            raise CredentialsExpired(
+                "Google authorization has expired. Please re-connect your "
+                "Google account from the DLoad page."
+            ) from exc
         updated = {
             "token": creds.token,
             "refresh_token": creds.refresh_token,
@@ -401,6 +420,19 @@ def _run_dload_sync(
             "success",
         )
 
+    except CredentialsExpired as exc:
+        session.log(str(exc), "error")
+    except RefreshError:
+        # A lazy token refresh triggered by the API client failed (the stored
+        # token has no expiry, so google-api-client refreshes on first use and
+        # can raise invalid_grant here rather than in _load_credentials). Drop
+        # the stale credentials and prompt the user to re-authorize.
+        database.set_setting("dload_credentials", "")
+        session.log(
+            "Google authorization has expired. Please re-connect your "
+            "Google account from the DLoad page.",
+            "error",
+        )
     except Exception as exc:
         session.log(f"Fatal error: {exc}", "error")
     finally:

@@ -41,7 +41,19 @@ export function DLoadPage({
   useEffect(() => {
     const authResult = searchParams.get('auth');
     if (authResult === 'success' || authResult === 'error') {
-      onAuthResult(authResult, searchParams.get('detail') ?? undefined);
+      const detail = searchParams.get('detail') ?? undefined;
+      onAuthResult(authResult, detail);
+
+      // If OAuth completed inside a popup, notify the opener and self-close.
+      if (window.opener && window.opener !== window) {
+        window.opener.postMessage(
+          { type: 'dload-oauth-result', result: authResult, detail },
+          window.location.origin,
+        );
+        window.close();
+        return;
+      }
+
       setSearchParams({}, { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

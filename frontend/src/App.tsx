@@ -26,6 +26,8 @@ export default function App() {
   const [dloadLogs, setDloadLogs] = useState<DLoadLogLine[]>([]);
   const [dloadStatusNote, setDloadStatusNote] = useState('');
   const dloadEsRef = useRef<EventSource | null>(null);
+  const dloadAuthPopupRef = useRef<Window | null>(null);
+  const dloadAuthPollRef = useRef<number | null>(null);
 
   useEffect(() => {
     getConfig()
@@ -45,11 +47,47 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Accept OAuth completion messages from the popup callback page.
+  useEffect(() => {
+    function onMessage(event: MessageEvent): void {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as {
+        type?: string;
+        result?: 'success' | 'error';
+        detail?: string;
+      };
+      if (data?.type !== 'dload-oauth-result') return;
+
+      if (dloadAuthPollRef.current !== null) {
+        window.clearInterval(dloadAuthPollRef.current);
+        dloadAuthPollRef.current = null;
+      }
+      dloadAuthPopupRef.current?.close();
+      dloadAuthPopupRef.current = null;
+
+      if (data.result === 'success') {
+        setDloadPageState('ready');
+        setDloadStatusNote('Authorization successful!');
+      } else {
+        setDloadPageState('needs_auth');
+        setDloadStatusNote(`Authorization failed: ${data.detail ?? 'Unknown error'}`);
+      }
+    }
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   // Cleanup all SSE streams on unmount
   useEffect(() => {
     return () => {
       esRefs.current.forEach((es) => es.close());
       dloadEsRef.current?.close();
+      if (dloadAuthPollRef.current !== null) {
+        window.clearInterval(dloadAuthPollRef.current);
+        dloadAuthPollRef.current = null;
+      }
+      dloadAuthPopupRef.current?.close();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -305,7 +343,76 @@ export default function App() {
 
   const handleDLoadAuthorize = useCallback(async () => {
     try {
-      window.location.href = await getDLoadAuthUrl();
+      const authUrl = await getDLoadAuthUrl();
+
+      if (dloadAuthPollRef.current !== null) {
+        window.clearInterval(dloadAuthPollRef.current);
+        dloadAuthPollRef.current = null;
+      }
+      dloadAuthPopupRef.current?.close();
+
+      const popup = window.open(
+        authUrl,
+        'dload-google-oauth',
+        'popup=yes,width=560,height=700,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes',
+      );
+
+      if (!popup) {
+        setDloadStatusNote('Popup was blocked by your browser. Opening authorization in this tab...');
+        window.location.href = authUrl;
+        return;
+      }
+
+      dloadAuthPopupRef.current = popup;
+      popup.focus();
+
+      dloadAuthPollRef.current = window.setInterval(() => {
+        const currentPopup = dloadAuthPopupRef.current;
+        if (!currentPopup) return;
+
+        if (currentPopup.closed) {
+          if (dloadAuthPollRef.current !== null) {
+            window.clearInterval(dloadAuthPollRef.current);
+            dloadAuthPollRef.current = null;
+          }
+          dloadAuthPopupRef.current = null;
+          getDLoadStatus()
+            .then((s) => {
+              if (s.authorized) {
+                setDloadPageState('ready');
+                setDloadStatusNote('Authorization successful!');
+              } else {
+                setDloadPageState('needs_auth');
+              }
+            })
+            .catch(() => setDloadPageState('needs_auth'));
+          return;
+        }
+
+        try {
+          const url = new URL(currentPopup.location.href);
+          const authResult = url.searchParams.get('auth');
+          if (authResult === 'success' || authResult === 'error') {
+            if (dloadAuthPollRef.current !== null) {
+              window.clearInterval(dloadAuthPollRef.current);
+              dloadAuthPollRef.current = null;
+            }
+            currentPopup.close();
+            dloadAuthPopupRef.current = null;
+
+            const detail = url.searchParams.get('detail') ?? undefined;
+            if (authResult === 'success') {
+              setDloadPageState('ready');
+              setDloadStatusNote('Authorization successful!');
+            } else {
+              setDloadPageState('needs_auth');
+              setDloadStatusNote(`Authorization failed: ${detail ?? 'Unknown error'}`);
+            }
+          }
+        } catch {
+          // Ignore cross-origin access errors until callback returns to our origin.
+        }
+      }, 500);
     } catch (err) {
       setDloadStatusNote(err instanceof Error ? err.message : 'Failed to get auth URL');
     }
