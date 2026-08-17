@@ -14,6 +14,14 @@ YT_DLP_BASE_OPTIONS: dict = {
     "ignoreerrors": True,
     "no_warnings": True,
     "concurrent_fragment_downloads": 4,
+
+    # Bypass 403 Forbidden by forcing yt-dlp to use unblocked player clients
+    "extractor_args": {
+        "youtube": {
+            "player_client": ["ios", "mweb", "web"]
+        }
+    },
+
     # Audio extraction — let yt-dlp pick the best available stream,
     # then FFmpeg converts it.  Do NOT set "format" here; an explicit
     # "bestaudio/best" fails for videos that only have muxed streams.
@@ -40,13 +48,13 @@ YT_DLP_BASE_OPTIONS: dict = {
     # Playlist
     "noplaylist": False,
     # User agent
-    "http_headers": {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        )
-    },
+    # "http_headers": {
+    #     "User-Agent": (
+    #         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    #         "AppleWebKit/537.36 (KHTML, like Gecko) "
+    #         "Chrome/120.0.0.0 Safari/537.36"
+    #     )
+    # },
     # Suppress terminal output — we use progress hooks instead
     "quiet": True,
     "noprogress": True,
